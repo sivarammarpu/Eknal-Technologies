@@ -5,6 +5,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from functools import wraps
 import hashlib
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -296,4 +299,5 @@ print(hasattr(hashlib, 'scrypt'))
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    debug_mode = True if os.getenv('FLASK_DEBUG', 'False').lower() == 'true' else False
+    app.run(debug=debug_mode, port=7800, host='0.0.0.0')
