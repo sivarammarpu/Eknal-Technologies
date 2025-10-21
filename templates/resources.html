@@ -42,11 +42,12 @@
 
       <!-- Files Section -->
       {% for file in files %}
-    <div class="bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold p-4 rounded-2xl">
+    <div class="transition transform hover:-translate-y-1 shadow-md bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold p-4 rounded-2xl 
+                hover:from-yellow-500 hover:via-orange-500 hover:to-amber-500">
       <div class="flex justify-between items-center">
         <span>{{ file.title }}</span>
         <div class="flex gap-2">
-          <a href="{{ url_for('download', file_id=file.id) }}" download class="bg-white hover:bg-grey text-black px-3 rounded text-sm">Download</a>
+          <a href="{{ url_for('public_download', file_id=file.id) }}" download class="bg-white hover:bg-grey text-black px-3 rounded text-sm">Download</a>
           <a href="{{ url_for('preview_file', file_id=file.id) }}" class="bg-yellow-400 hover:bg-yellow-500 text-black px-3 rounded text-sm">Preview</a>
         </div>
       </div>
