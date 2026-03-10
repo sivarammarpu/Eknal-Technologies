@@ -51,18 +51,54 @@ except Exception:
     redis_client = None
     _redis_available = False
 
+# ---------------- FILESYSTEM PATHS ----------------
+# Vercel's /var/task is read-only. We attempt to create a local uploads/
+# directory and fall back to /tmp/uploads if the filesystem is read-only.
+# This is more reliable than checking the VERCEL env var.
+
+def _resolve_upload_folder() -> str:
+    candidates = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads"),
+        "/tmp/uploads",
+    ]
+    for path in candidates:
+        try:
+            os.makedirs(path, exist_ok=True)
+            test = os.path.join(path, ".writetest")
+            with open(test, "w") as f:
+                f.write("ok")
+            os.remove(test)
+            return path
+        except OSError:
+            continue
+    # Last resort: system temp
+    import tempfile
+    return tempfile.mkdtemp()
+
+def _resolve_db_path() -> str:
+    candidates = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "instance", "data.db"),
+        "/tmp/data.db",
+    ]
+    for path in candidates:
+        parent = os.path.dirname(path)
+        try:
+            os.makedirs(parent, exist_ok=True)
+            test = os.path.join(parent, ".writetest")
+            with open(test, "w") as f:
+                f.write("ok")
+            os.remove(test)
+            return path
+        except OSError:
+            continue
+    return "/tmp/data.db"
+
+UPLOAD_FOLDER = _resolve_upload_folder()
+_db_path      = _resolve_db_path()
+
 # ---------------- APP ----------------
 app = Flask(__name__)
-app.config["SECRET_KEY"]                  = os.getenv("SECRET_KEY", os.urandom(24).hex())
-
-# On Vercel the only writable path is /tmp — use it for SQLite and uploads
-if IS_VERCEL:
-    _db_path      = "/tmp/data.db"
-    UPLOAD_FOLDER = "/tmp/uploads"
-else:
-    _db_path      = os.path.join(os.path.dirname(__file__), "instance", "data.db")
-    UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "uploads")
-
+app.config["SECRET_KEY"]                     = os.getenv("SECRET_KEY", os.urandom(24).hex())
 app.config["SQLALCHEMY_DATABASE_URI"]        = f"sqlite:///{_db_path}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["WTF_CSRF_ENABLED"]               = True
@@ -72,12 +108,9 @@ app.config["UPLOAD_FOLDER"]                  = UPLOAD_FOLDER
 
 ALLOWED_EXTENSIONS = {"txt", "pdf", "png", "jpg", "jpeg", "gif", "docx", "xlsx", "pptx", "zip"}
 
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-if not IS_VERCEL:
-    os.makedirs(os.path.dirname(_db_path), exist_ok=True)
-
 db   = SQLAlchemy(app)
 csrf = CSRFProtect(app)
+
 
 limiter = Limiter(
     get_remote_address,
