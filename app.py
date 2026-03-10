@@ -597,8 +597,12 @@ def self_edit_collaborator():
 
     return render_template("self_edit.html", collaborator=collaborator)
 
-# ---------------- RUN ----------------
+# ---------------- DB INIT ----------------
+# This must run on every cold start, including Vercel serverless invocations.
+# DO NOT put this inside `if __name__ == "__main__"` only.
+with app.app_context():
+    db.create_all()
+
+# ---------------- RUN (local dev only) ----------------
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)
