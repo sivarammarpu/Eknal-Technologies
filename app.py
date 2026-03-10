@@ -21,6 +21,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Detect Vercel serverless environment
+IS_VERCEL = os.getenv("VERCEL") == "1"
+
 # ---------------- EMAIL / REDIS CONFIG ----------------
 EMAIL_USER = os.getenv("EMAIL_USER")
 EMAIL_PASS = os.getenv("EMAIL_PASS")
@@ -30,28 +33,48 @@ REDIS_HOST     = os.getenv("REDIS_SERVER_NUMBER", "localhost")
 REDIS_PORT     = int(os.getenv("REDIS_PORT_NUMBER", 6379))
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD") or None
 
-redis_client = redis.Redis(
-    host=REDIS_HOST,
-    port=REDIS_PORT,
-    password=REDIS_PASSWORD,
-    decode_responses=True
-)
+# Redis with graceful in-memory fallback (used on Vercel when Redis isn't configured)
+_otp_memory_store: dict = {}   # fallback: {"otp:<email>": otp}
+_redis_available = False
+
+try:
+    redis_client = redis.Redis(
+        host=REDIS_HOST,
+        port=REDIS_PORT,
+        password=REDIS_PASSWORD,
+        decode_responses=True,
+        socket_connect_timeout=2
+    )
+    redis_client.ping()
+    _redis_available = True
+except Exception:
+    redis_client = None
+    _redis_available = False
 
 # ---------------- APP ----------------
 app = Flask(__name__)
 app.config["SECRET_KEY"]                  = os.getenv("SECRET_KEY", os.urandom(24).hex())
-app.config["SQLALCHEMY_DATABASE_URI"]     = "sqlite:///data.db"
+
+# On Vercel the only writable path is /tmp — use it for SQLite and uploads
+if IS_VERCEL:
+    _db_path      = "/tmp/data.db"
+    UPLOAD_FOLDER = "/tmp/uploads"
+else:
+    _db_path      = os.path.join(os.path.dirname(__file__), "instance", "data.db")
+    UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "uploads")
+
+app.config["SQLALCHEMY_DATABASE_URI"]        = f"sqlite:///{_db_path}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["WTF_CSRF_ENABLED"]            = True
-app.config["MAX_CONTENT_LENGTH"]          = 16 * 1024 * 1024   # 16 MB upload limit
-app.config["PERMANENT_SESSION_LIFETIME"]  = timedelta(minutes=30)
+app.config["WTF_CSRF_ENABLED"]               = True
+app.config["MAX_CONTENT_LENGTH"]             = 16 * 1024 * 1024   # 16 MB
+app.config["PERMANENT_SESSION_LIFETIME"]     = timedelta(minutes=30)
+app.config["UPLOAD_FOLDER"]                  = UPLOAD_FOLDER
 
-UPLOAD_FOLDER     = "uploads"
 ALLOWED_EXTENSIONS = {"txt", "pdf", "png", "jpg", "jpeg", "gif", "docx", "xlsx", "pptx", "zip"}
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+if not IS_VERCEL:
+    os.makedirs(os.path.dirname(_db_path), exist_ok=True)
 
 db   = SQLAlchemy(app)
 csrf = CSRFProtect(app)
@@ -119,13 +142,24 @@ def generate_otp() -> str:
     return str(random.randint(100000, 999999))
 
 def save_otp(email: str, otp: str):
-    redis_client.setex(f"otp:{email}", 300, otp)
+    key = f"otp:{email}"
+    if _redis_available:
+        redis_client.setex(key, 300, otp)
+    else:
+        _otp_memory_store[key] = otp
 
 def get_otp(email: str):
-    return redis_client.get(f"otp:{email}")
+    key = f"otp:{email}"
+    if _redis_available:
+        return redis_client.get(key)
+    return _otp_memory_store.get(key)
 
 def delete_otp(email: str):
-    redis_client.delete(f"otp:{email}")
+    key = f"otp:{email}"
+    if _redis_available:
+        redis_client.delete(key)
+    else:
+        _otp_memory_store.pop(key, None)
 
 # ---------------- EMAIL ----------------
 def send_email(to: str, otp: str):

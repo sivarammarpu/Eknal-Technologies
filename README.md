@@ -258,6 +258,3 @@ or by any means, electronic or mechanical, without prior written permission.
 
 ---
 
-<p align="center">
-  Built with ❤️ by <a href="https://www.linkedin.com/in/sivaram-marpu/" target="_blank">Siva Ram Marpu</a> · React Developer Intern at <a href="https://eknaltechnologies.in" target="_blank">Eknal Technologies</a>
-</p>
