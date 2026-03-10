@@ -58,8 +58,8 @@ except Exception:
 
 def _resolve_upload_folder() -> str:
     candidates = [
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads"),
-        "/tmp/uploads",
+        "/tmp/uploads",  # writable on Vercel + Linux; comes first
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads"),  # Windows dev
     ]
     for path in candidates:
         try:
@@ -77,8 +77,8 @@ def _resolve_upload_folder() -> str:
 
 def _resolve_db_path() -> str:
     candidates = [
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), "instance", "data.db"),
-        "/tmp/data.db",
+        "/tmp/data.db",  # writable on Vercel + Linux; comes first
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "instance", "data.db"),  # Windows dev
     ]
     for path in candidates:
         parent = os.path.dirname(path)
