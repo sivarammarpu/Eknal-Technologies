@@ -98,7 +98,10 @@ _db_path      = _resolve_db_path()
 
 # ---------------- APP ----------------
 app = Flask(__name__)
-app.config["SECRET_KEY"]                     = os.getenv("SECRET_KEY", os.urandom(24).hex())
+# IMPORTANT: set SECRET_KEY as an env var in Vercel for stable sessions.
+# The hardcoded fallback below keeps sessions working across cold starts
+# when the env var is not set — never use a random key on serverless.
+app.config["SECRET_KEY"]                     = os.getenv("SECRET_KEY", "eknal-link-dev-secret-key-2026")
 app.config["SQLALCHEMY_DATABASE_URI"]        = f"sqlite:///{_db_path}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["WTF_CSRF_ENABLED"]               = True
@@ -630,11 +633,48 @@ def self_edit_collaborator():
 
     return render_template("self_edit.html", collaborator=collaborator)
 
-# ---------------- DB INIT ----------------
+# ---------------- DB INIT + SEED ----------------
 # This must run on every cold start, including Vercel serverless invocations.
-# DO NOT put this inside `if __name__ == "__main__"` only.
+def _seed_demo_data():
+    """Populate the DB with demo content if it's empty."""
+    if Link.query.first():
+        return  # Already seeded
+
+    # ---- Demo Links ----
+    demo_links = [
+        Link(title="Eknal Technologies",
+             url="https://eknaltechnologies.in"),
+        Link(title="Python Official Docs",
+             url="https://docs.python.org/3/"),
+        Link(title="Flask Documentation",
+             url="https://flask.palletsprojects.com/"),
+        Link(title="React Documentation",
+             url="https://react.dev/"),
+        Link(title="GitHub Repository",
+             url="https://github.com/sivarammarpu/Eknal-Technologies"),
+        Link(title="Tailwind CSS Docs",
+             url="https://tailwindcss.com/docs"),
+        Link(title="SQLite Documentation",
+             url="https://www.sqlite.org/docs.html"),
+        Link(title="Python Flask Tutorial",
+             url="https://flask.palletsprojects.com/en/stable/tutorial/"),
+    ]
+    db.session.add_all(demo_links)
+
+    # ---- Demo Collaborator ----
+    if not Collaborator.query.first():
+        db.session.add(Collaborator(
+            name="Sivaram Marpu",
+            email="sivarammarpu@eknaltechnologies.in",
+            resume_url="https://github.com/sivarammarpu",
+            contribution="React Developer Intern — Built and deployed the Eknal Link platform end-to-end."
+        ))
+
+    db.session.commit()
+
 with app.app_context():
     db.create_all()
+    _seed_demo_data()
 
 # ---------------- RUN (local dev only) ----------------
 if __name__ == "__main__":
