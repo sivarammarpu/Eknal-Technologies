@@ -1,164 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Request Profile Edit</title>
-<script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Request Profile Edit | Eknal Technologies</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <style>body{font-family:'Inter',sans-serif;}</style>
 </head>
+<body class="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 via-white to-indigo-100 relative text-gray-900">
 
-<body class="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 via-white to-indigo-100 text-gray-900 relative overflow-x-hidden">
 <!-- Background -->
 <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 pointer-events-none"></div>
-<!-- ================= TOP BAR ================= -->
-<div class="absolute top-0 left-0 w-full flex items-center justify-between
-            px-10 py-4 z-20 border-b border-white/60">
 
-  <!-- Logo -->
-  <img src="{{ url_for('static', filename='eknal_link.png') }}"
-       class="h-8 sm:h-12">
-  <!-- Navigation -->
-  <div class="flex gap-6 text-sm font-semibold">
+<!-- Header -->
+<header class="relative z-20 flex items-center justify-between px-6 py-4 border-b border-white/60 bg-white/60 backdrop-blur">
+  <a href="{{ url_for('resources') }}">
+    <img src="{{ url_for('static', filename='eknal_link.png') }}"
+         alt="Eknal Link Logo" class="h-8 sm:h-10">
+  </a>
+  <nav class="flex gap-5 text-sm font-semibold">
+    <a href="{{ url_for('resources') }}"    class="text-gray-500 hover:text-indigo-600 transition">Resources</a>
+    <a href="{{ url_for('collaborators') }}" class="text-gray-500 hover:text-indigo-600 transition">Team</a>
+  </nav>
+</header>
 
-    <a href="/"
-       class="text-indigo-700 hover:text-indigo-500
-              border-b-2 border-transparent
-              hover:border-indigo-500 transition">
-      Home
-    </a>
-
-    <a href="/collaborators"
-       class="text-indigo-700 hover:text-indigo-500
-              border-b-2 border-transparent
-              hover:border-indigo-500 transition">
-      Collaborators
-    </a>
-
-  </div>
-</div>
+<!-- Flash Messages -->
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
+<div class="fixed top-20 right-4 z-50 flex flex-col gap-2">
   {% for category, message in messages %}
-  <div id="toast"
-       class="fixed top-6 left-1/2 -translate-x-1/2 z-50
-              px-7 py-3 rounded-xl shadow-xl
-              bg-white/90 backdrop-blur-md
-              text-gray-800 text-sm font-medium
-              border border-gray-200
-              flex items-center gap-3
-              transform scale-95 translate-y-4 opacity-0
-              transition-all duration-500">
-
-      <!-- Accent bar -->
-      <span class="w-1.5 h-6 rounded-full
-            {% if category=='success' %}bg-green-500
-            {% elif category=='danger' %}bg-red-500
-            {% else %}bg-indigo-500{% endif %}">
-      </span>
-
-      <span>{{ message }}</span>
-
+  <div class="flash-msg flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-sm font-medium
+              text-white opacity-0 translate-y-2 transition-all duration-500
+              {% if category == 'success' %}bg-green-500{% elif category == 'danger' %}bg-red-500{% else %}bg-indigo-500{% endif %}">
+    {{ message }}
   </div>
   {% endfor %}
+</div>
 {% endif %}
 {% endwith %}
-<!-- Center Card -->
-<div class="flex-grow flex items-center justify-center px-4 pt-24 pb-12 relative z-10">
 
-<div class="bg-white/80 backdrop-blur rounded-2xl shadow-xl p-8 w-full max-w-md">
+<!-- Content -->
+<div class="relative z-10 flex-1 flex items-center justify-center px-4 py-16">
+  <div class="bg-white/80 backdrop-blur rounded-2xl shadow-xl p-8 w-full max-w-md">
 
-<h2 class="text-2xl font-bold text-indigo-700 text-center mb-2">
-Request Profile Edit
-</h2>
+    <h1 class="text-2xl font-bold text-indigo-700 text-center mb-2">Edit Your Profile</h1>
+    <p class="text-gray-500 text-sm text-center mb-6">
+      Enter your registered email address and we'll send you a 6-digit verification code.
+    </p>
 
-<p class="text-center text-gray-600 mb-6">
-Enter your registered email to receive OTP
-</p>
+    <form method="post" class="space-y-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-<form method="post" class="space-y-4">
+      <div>
+        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+        <input type="email" id="email" name="email" required
+               placeholder="you@example.com"
+               class="w-full border border-gray-300 px-4 py-3 rounded-lg text-sm
+                      focus:ring-2 focus:ring-indigo-400 focus:outline-none transition text-center">
+      </div>
 
-<input type="email" name="email" required
- class="w-full border px-3 py-3 rounded-lg text-center
- focus:ring-2 focus:ring-indigo-400 outline-none"
- placeholder="you@example.com">
+      <button id="sendBtn" type="submit"
+              class="w-full py-3 rounded-xl font-semibold text-white
+                     bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500
+                     hover:from-yellow-500 hover:via-orange-500 hover:to-amber-500
+                     transition shadow-md flex items-center justify-center gap-2">
+        <span>Send Verification Code</span>
+        <svg id="spinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="white" stroke-width="3" stroke-dasharray="60" stroke-dashoffset="15"/>
+        </svg>
+      </button>
+    </form>
 
-<button id="sendBtn"
- class="w-full py-3 rounded-xl font-semibold text-white
- bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500
- hover:from-yellow-500 hover:via-orange-500 hover:to-amber-500
- transition flex items-center justify-center gap-2">
-
-<span id="btnText">Send OTP</span>
-
-<svg id="spinner"
- class="hidden w-5 h-5 animate-spin text-white"
- viewBox="0 0 24 24">
- <circle cx="12" cy="12" r="10"
-  stroke="currentColor" stroke-width="4"
-  fill="none" opacity="0.25"></circle>
- <path fill="currentColor"
-  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
- </path>
-</svg>
-
-</button>
-
-<p class="text-xs text-gray-500 text-center">
-This may take a few seconds
-</p>
-
-</form>
-
+    <div class="text-center mt-5">
+      <a href="{{ url_for('collaborators') }}" class="text-gray-400 text-xs hover:text-indigo-500 transition">
+        ← Back to Team
+      </a>
+    </div>
+  </div>
 </div>
 
-</div>
-<footer class="text-center text-gray-500 text-xs sm:text-sm z-10 py-4 mt-auto border-t border-gray-300 w-full px-4">
-<p>
+<!-- Footer -->
+<footer class="relative z-10 text-center text-gray-400 text-xs py-5 border-t border-white/60">
   Developed by
-  <a href="https://www.linkedin.com/in/shalem-raj-putta-054388295/"
-     target="_blank"
-     class="text-indigo-600 font-semibold hover:underline">
-    Shalem Raj (Python Intern)
-  </a>
+  <a href="https://www.linkedin.com/in/sivaram-marpu/" target="_blank" rel="noopener noreferrer"
+     class="text-indigo-500 font-semibold hover:underline">Sivaram Marpu (React Intern)</a>
   at
-  <a href="https://eknaltechnologies.in"
-     target="_blank"
-     class="text-indigo-600 font-semibold hover:underline">
-    Eknal Technologies
-  </a>.
-</p>
+  <a href="https://eknaltechnologies.in" target="_blank" rel="noopener noreferrer"
+     class="text-indigo-500 font-semibold hover:underline">Eknal Technologies</a>.
 </footer>
-<!-- Loading Script -->
+
 <script>
-const form = document.querySelector("form");
-const btn = document.getElementById("sendBtn");
-const text = document.getElementById("btnText");
-const spinner = document.getElementById("spinner");
-const toast = document.getElementById("toast");
+document.querySelectorAll('.flash-msg').forEach((el, i) => {
+  setTimeout(() => el.classList.remove('opacity-0','translate-y-2'), 100 + i*80);
+  setTimeout(() => el.classList.add('opacity-0'), 2800 + i*80);
+  setTimeout(() => el.remove(), 3400 + i*80);
+});
 
-if (toast) {
-  // Fade & slide in
-  setTimeout(() => {
-    toast.classList.remove("translate-y-4", "opacity-0");
-  }, 100);
-
-  // Fade out
-  setTimeout(() => {
-    toast.classList.add("opacity-0");
-  }, 2500);
-
-  // Remove element
-  setTimeout(() => {
-    toast.remove();
-  }, 3000);
-}
-form.addEventListener("submit", () => {
-  btn.disabled = true;
-  btn.classList.add("opacity-70","cursor-not-allowed");
-  text.textContent = "Sending OTP...";
-  spinner.classList.remove("hidden");
+document.querySelector('form').addEventListener('submit', () => {
+  document.getElementById('sendBtn').disabled = true;
+  document.getElementById('spinner').classList.remove('hidden');
 });
 </script>
-
 </body>
 </html>

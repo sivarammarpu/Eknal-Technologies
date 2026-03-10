@@ -5,258 +5,279 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard | Eknal Technologies</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <style> body { font-family: 'Inter', sans-serif; } </style>
 </head>
+<body class="min-h-screen bg-slate-50 text-gray-900 flex flex-col">
 
-<body class="min-h-screen bg-slate-50 text-slate-800">
-
-<!-- ================= HEADER ================= -->
+<!-- Header -->
 <header class="bg-white border-b shadow-sm">
   <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-
-    <!-- Left : Logo + Brand -->
     <div class="flex items-center gap-3">
-      <img src="{{ url_for('static', filename='eknal_link.png') }}" class="h-8">
-      <!-- <span class="font-semibold text-lg text-indigo-600">
-       Eknal Workspace
-      </span> -->
+      <img src="{{ url_for('static', filename='eknal_link.png') }}" class="h-8" alt="Eknal Link Logo">
     </div>
-
-    <!-- Right : Links -->
-    <div class="flex items-center gap-6">
-      <a href="{{ url_for('resources') }}"
-         class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition">
-        Home
-      </a>
-
+    <nav class="flex items-center gap-5 text-sm font-medium">
+      <a href="{{ url_for('resources') }}" class="text-gray-500 hover:text-indigo-600 transition">Home</a>
       <a href="{{ url_for('admin_logout') }}"
-         class="text-sm font-medium text-slate-600 hover:text-red-600 transition">
+         class="bg-red-50 text-red-600 border border-red-200 px-4 py-1.5 rounded-lg
+                hover:bg-red-100 transition font-semibold text-sm">
         Logout
       </a>
-    </div>
-
+    </nav>
   </div>
 </header>
+
+<!-- Flash Messages -->
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
+<div id="flash-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2">
   {% for category, message in messages %}
-  <div id="toast"
-       class="fixed top-6 left-1/2 -translate-x-1/2 z-50
-              px-7 py-3 rounded-xl shadow-xl
-              bg-white/90 backdrop-blur-md
-              text-gray-800 text-sm font-medium
-              border border-gray-200
-              flex items-center gap-3
-              transform scale-95 translate-y-4 opacity-0
-              transition-all duration-500">
-
-      <!-- Accent bar -->
-      <span class="w-1.5 h-6 rounded-full
-            {% if category=='success' %}bg-green-500
-            {% elif category=='danger' %}bg-red-500
-            {% else %}bg-indigo-500{% endif %}">
-      </span>
-
-      <span>{{ message }}</span>
-
+  <div class="flash-msg flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-sm font-medium
+              text-white opacity-0 translate-y-2 transition-all duration-500
+              {% if category == 'success' %}bg-green-500{% elif category == 'danger' %}bg-red-500
+              {% elif category == 'info' %}bg-blue-500{% else %}bg-indigo-500{% endif %}">
+    <span>{% if category == 'success' %}✓{% elif category == 'danger' %}✗{% else %}ℹ{% endif %}</span>
+    {{ message }}
   </div>
   {% endfor %}
+</div>
 {% endif %}
 {% endwith %}
-<!-- ================= MAIN ================= -->
-<main class="max-w-7xl mx-auto px-6 py-10">
 
-<!-- Page Title -->
-<div class="mb-8">
-  <h1 class="text-2xl font-semibold">Dashboard</h1>
-  <p class="text-slate-500 text-sm">Manage links, files, and collaborators</p>
-</div>
+<!-- Main Content -->
+<main class="max-w-7xl mx-auto px-6 py-10 flex-1 w-full">
 
-<!-- ================= QUICK ACTIONS ================= -->
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
+    <p class="text-sm text-gray-500 mt-1">Manage links, files, and collaborators</p>
+  </div>
 
-  <a href="{{ url_for('add_link') }}"
-     class="bg-white border rounded-xl p-5 hover:shadow-md transition">
-    <p class="text-sm text-slate-500">Create</p>
-    <h3 class="font-semibold text-lg mt-1">Add Link</h3>
-  </a>
-
-  <a href="{{ url_for('add_file') }}"
-     class="bg-white border rounded-xl p-5 hover:shadow-md transition">
-    <p class="text-sm text-slate-500">Upload</p>
-    <h3 class="font-semibold text-lg mt-1">Add File</h3>
-  </a>
-
-  <a href="/add-collaborator"
-     class="bg-white border rounded-xl p-5 hover:shadow-md transition">
-    <p class="text-sm text-slate-500">Manage</p>
-    <h3 class="font-semibold text-lg mt-1">Add Collaborator</h3>
-  </a>
-
-</div>
-
-<!-- ================= LINKS ================= -->
-<section class="mb-12">
-
-<h2 class="text-lg font-semibold mb-4">Links</h2>
-
-<div class="bg-white border rounded-xl overflow-hidden">
-
-<table class="w-full text-sm">
-<thead class="bg-slate-100">
-<tr>
-  <th class="text-left px-5 py-3">Title</th>
-  <th class="text-right px-5 py-3">Actions</th>
-</tr>
-</thead>
-
-<tbody>
-{% for link in links %}
-<tr class="border-t">
-
-  <td class="px-5 py-3">
-    {{ link.title }}
-  </td>
-
-  <td class="px-5 py-3 text-right space-x-3">
-
-    <a href="{{ link.url }}" target="_blank"
-       class="text-indigo-600 hover:underline">
-      Open
+  <!-- Quick Actions -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+    <a href="{{ url_for('add_link') }}"
+       class="group flex flex-col gap-1 p-5 bg-white border border-gray-200 rounded-xl
+              hover:border-indigo-400 hover:shadow-md transition cursor-pointer">
+      <span class="text-2xl">🔗</span>
+      <span class="text-xs text-gray-400 font-medium">Create</span>
+      <span class="font-semibold text-gray-800 group-hover:text-indigo-600 transition">Add Link</span>
     </a>
 
-    <a href="{{ url_for('edit_link', id=link.id) }}"
-       class="text-amber-600 hover:underline">
-      Edit
+    <a href="{{ url_for('add_file') }}"
+       class="group flex flex-col gap-1 p-5 bg-white border border-gray-200 rounded-xl
+              hover:border-orange-400 hover:shadow-md transition cursor-pointer">
+      <span class="text-2xl">📄</span>
+      <span class="text-xs text-gray-400 font-medium">Upload</span>
+      <span class="font-semibold text-gray-800 group-hover:text-orange-600 transition">Add File</span>
     </a>
 
-    <form action="{{ url_for('delete_link', id=link.id) }}"
-          method="post"
-          class="inline">
+    <a href="{{ url_for('add_collaborator') }}"
+       class="group flex flex-col gap-1 p-5 bg-white border border-gray-200 rounded-xl
+              hover:border-green-400 hover:shadow-md transition cursor-pointer">
+      <span class="text-2xl">👥</span>
+      <span class="text-xs text-gray-400 font-medium">Manage</span>
+      <span class="font-semibold text-gray-800 group-hover:text-green-600 transition">Add Collaborator</span>
+    </a>
+  </div>
 
-      <button class="text-red-600 hover:underline"
-              onclick="return confirm('Delete this link?')">
-        Delete
-      </button>
+  <!-- ===== LINKS ===== -->
+  <section class="mb-10">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-sm font-bold uppercase tracking-widest text-gray-400">Links
+        <span class="ml-2 text-indigo-400">({{ links|length }})</span>
+      </h2>
+      <a href="{{ url_for('add_link') }}"
+         class="text-xs font-semibold text-indigo-600 hover:underline">+ Add</a>
+    </div>
 
-    </form>
+    <div class="bg-white border rounded-xl overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 border-b">
+          <tr>
+            <th class="text-left px-5 py-3 font-semibold text-gray-500">Title</th>
+            <th class="text-center px-5 py-3 font-semibold text-gray-500 hidden sm:table-cell">Clicks</th>
+            <th class="text-right px-5 py-3 font-semibold text-gray-500">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for link in links %}
+          <tr class="border-t hover:bg-slate-50 transition">
+            <td class="px-5 py-3 font-medium text-gray-800">
+              <a href="{{ url_for('open_link', id=link.id) }}" target="_blank" rel="noopener noreferrer"
+                 class="hover:text-indigo-600 hover:underline">
+                🔗 {{ link.title }}
+              </a>
+            </td>
+            <td class="px-5 py-3 text-center hidden sm:table-cell">
+              <span class="inline-block bg-indigo-50 text-indigo-600 text-xs font-bold px-2.5 py-0.5 rounded-full">
+                {{ link.clicks }}
+              </span>
+            </td>
+            <td class="px-5 py-3 text-right space-x-3">
+              <a href="{{ url_for('edit_link', id=link.id) }}"
+                 class="text-amber-600 hover:underline">Edit</a>
 
-  </td>
+              <form action="{{ url_for('delete_link', id=link.id) }}"
+                    method="post" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit"
+                        class="text-red-500 hover:underline"
+                        onclick="return confirm('Delete link &quot;{{ link.title }}&quot;?')">
+                  Delete
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="3" class="px-5 py-8 text-center text-slate-400">
+              No links added yet.
+              <a href="{{ url_for('add_link') }}" class="text-indigo-500 hover:underline ml-1">Add one →</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-</tr>
-{% else %}
-<tr>
-  <td colspan="2" class="px-5 py-6 text-center text-slate-500">
-    No links added
-  </td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
+  <!-- ===== FILES ===== -->
+  <section class="mb-10">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-sm font-bold uppercase tracking-widest text-gray-400">Files
+        <span class="ml-2 text-orange-400">({{ files|length }})</span>
+      </h2>
+      <a href="{{ url_for('add_file') }}"
+         class="text-xs font-semibold text-orange-600 hover:underline">+ Upload</a>
+    </div>
 
-</div>
-</section>
+    <div class="bg-white border rounded-xl overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 border-b">
+          <tr>
+            <th class="text-left px-5 py-3 font-semibold text-gray-500">Title</th>
+            <th class="text-left px-5 py-3 font-semibold text-gray-500 hidden sm:table-cell">Filename</th>
+            <th class="text-right px-5 py-3 font-semibold text-gray-500">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for file in files %}
+          <tr class="border-t hover:bg-slate-50 transition">
+            <td class="px-5 py-3 font-medium text-gray-800">📄 {{ file.title }}</td>
+            <td class="px-5 py-3 text-gray-400 text-xs hidden sm:table-cell font-mono">{{ file.filename }}</td>
+            <td class="px-5 py-3 text-right space-x-3">
+              <a href="{{ url_for('preview_file', id=file.id) }}"
+                 target="_blank" rel="noopener noreferrer"
+                 class="text-sky-600 hover:underline">Preview</a>
 
-<!-- ================= FILES ================= -->
-<section>
+              <a href="{{ url_for('download', id=file.id) }}"
+                 class="text-indigo-600 hover:underline">Download</a>
 
-<h2 class="text-lg font-semibold mb-4">Files</h2>
+              <a href="{{ url_for('edit_file', id=file.id) }}"
+                 class="text-amber-600 hover:underline">Edit</a>
 
-<div class="bg-white border rounded-xl overflow-hidden">
+              <form action="{{ url_for('delete_file', id=file.id) }}"
+                    method="post" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit"
+                        class="text-red-500 hover:underline"
+                        onclick="return confirm('Delete file &quot;{{ file.title }}&quot;?')">
+                  Delete
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="3" class="px-5 py-8 text-center text-slate-400">
+              No files uploaded yet.
+              <a href="{{ url_for('add_file') }}" class="text-orange-500 hover:underline ml-1">Upload one →</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-<table class="w-full text-sm">
-<thead class="bg-slate-100">
-<tr>
-  <th class="text-left px-5 py-3">Title</th>
-  <th class="text-right px-5 py-3">Actions</th>
-</tr>
-</thead>
+  <!-- ===== COLLABORATORS ===== -->
+  <section>
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-sm font-bold uppercase tracking-widest text-gray-400">Collaborators
+        <span class="ml-2 text-green-400">({{ collaborators|length }})</span>
+      </h2>
+      <a href="{{ url_for('add_collaborator') }}"
+         class="text-xs font-semibold text-green-600 hover:underline">+ Add</a>
+    </div>
 
-<tbody>
-{% for file in files %}
-<tr class="border-t">
+    <div class="bg-white border rounded-xl overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 border-b">
+          <tr>
+            <th class="text-left px-5 py-3 font-semibold text-gray-500">Name</th>
+            <th class="text-left px-5 py-3 font-semibold text-gray-500 hidden sm:table-cell">Email</th>
+            <th class="text-left px-5 py-3 font-semibold text-gray-500 hidden md:table-cell">Role</th>
+            <th class="text-right px-5 py-3 font-semibold text-gray-500">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in collaborators %}
+          <tr class="border-t hover:bg-slate-50 transition">
+            <td class="px-5 py-3 font-medium text-gray-800">{{ c.name }}</td>
+            <td class="px-5 py-3 text-gray-500 hidden sm:table-cell">{{ c.email }}</td>
+            <td class="px-5 py-3 text-gray-500 hidden md:table-cell text-xs">{{ c.contribution }}</td>
+            <td class="px-5 py-3 text-right space-x-3">
+              <a href="{{ c.resume_url }}" target="_blank" rel="noopener noreferrer"
+                 class="text-sky-600 hover:underline">Resume</a>
 
-  <td class="px-5 py-3">
-    {{ file.title }}
-  </td>
+              <a href="{{ url_for('edit_collaborator', id=c.id) }}"
+                 class="text-amber-600 hover:underline">Edit</a>
 
-  <td class="px-5 py-3 text-right space-x-3">
+              <form action="{{ url_for('delete_collaborator', id=c.id) }}"
+                    method="post" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit"
+                        class="text-red-500 hover:underline"
+                        onclick="return confirm('Remove {{ c.name }} from the team?')">
+                  Delete
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="4" class="px-5 py-8 text-center text-slate-400">
+              No collaborators yet.
+              <a href="{{ url_for('add_collaborator') }}" class="text-green-500 hover:underline ml-1">Add one →</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-  <a href="{{ url_for('download', id=file.id) }}"
-     class="text-indigo-600 hover:underline">
-    Download
-  </a>
+</main><!-- /.main -->
 
-  <a href="{{ url_for('edit_file', id=file.id) }}"
-     class="text-amber-600 hover:underline">
-    Edit
-  </a>
- <!-- Preview -->
-  <!-- <a href="{{ url_for('preview_file', id=file.id) }}"
-     target="_blank"
-     class="text-indigo-600 hover:underline">
-    Preview
-  </a> -->
-
-  <form action="{{ url_for('delete_file', id=file.id) }}"
-        method="post"
-        class="inline">
-
-    <button class="text-red-600 hover:underline"
-            onclick="return confirm('Delete this file?')">
-      Delete
-    </button>
-
-  </form>
-
-</td>
-</tr>
-{% else %}
-<tr>
-  <td colspan="2" class="px-5 py-6 text-center text-slate-500">
-    No files uploaded
-  </td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
-
-</div>
-
-</section>
-
-</main>
-<footer class="text-center text-gray-500 text-xs sm:text-sm z-10 py-4 mt-auto border-t border-gray-300 w-full px-4">
-<p>
-  Developed by
-  <a href="https://www.linkedin.com/in/shalem-raj-putta-054388295/"
-     target="_blank"
-     class="text-indigo-600 font-semibold hover:underline">
-    Shalem Raj (Python Intern)
-  </a>
-  at
-  <a href="https://eknaltechnologies.in"
-     target="_blank"
-     class="text-indigo-600 font-semibold hover:underline">
-    Eknal Technologies
-  </a>.
-</p>
+<!-- Footer -->
+<footer class="text-center text-gray-400 text-xs py-5 border-t border-gray-200 bg-white mt-auto">
+  <p>
+    Developed by
+    <a href="https://www.linkedin.com/in/sivaram-marpu/" target="_blank" rel="noopener noreferrer"
+       class="text-indigo-500 font-semibold hover:underline">Sivaram Marpu (React Intern)</a>
+    at
+    <a href="https://eknaltechnologies.in" target="_blank" rel="noopener noreferrer"
+       class="text-indigo-500 font-semibold hover:underline">Eknal Technologies</a>.
+  </p>
 </footer>
+
 <script>
-const toast = document.getElementById("toast");
-
-if (toast) {
-  setTimeout(() => {
-    toast.classList.remove("opacity-0", "scale-95", "translate-y-4");
-  }, 100);
-
-  setTimeout(() => {
-    toast.classList.add("opacity-0");
-  }, 2500);
-
-  setTimeout(() => {
-    toast.remove();
-  }, 3000);
-}
+// Multi-toast animation
+document.querySelectorAll('.flash-msg').forEach((el, i) => {
+  setTimeout(() => el.classList.remove('opacity-0', 'translate-y-2'), 100 + i * 80);
+  setTimeout(() => el.classList.add('opacity-0'),                     2800 + i * 80);
+  setTimeout(() => el.remove(),                                        3400 + i * 80);
+});
 </script>
+
 </body>
 </html>

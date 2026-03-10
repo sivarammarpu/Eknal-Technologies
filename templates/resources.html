@@ -1,151 +1,209 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Eknal Link | Resources</title>
+  <meta name="description" content="Explore curated project resources, links, and files shared by the Eknal Technologies team.">
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .resource-item { transition: all 0.2s ease; }
+    .resource-item:hover { transform: translateY(-2px); }
+    .search-highlight { background: rgba(99,102,241,0.15); border-radius: 3px; }
+  </style>
 </head>
-
-<body class="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 via-white to-indigo-100 text-gray-900 relative overflow-x-hidden">
-
-<!-- Background pattern -->
-<div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 pointer-events-none"></div>
-
-<!-- Top Bar -->
-<div class="absolute top-0 left-0 w-full flex items-center justify-between
-            px-10 py-4 z-20 border-b border-white/60">
-
-  <!-- Logo (Admin Entry) -->
-  <a href="/admin-entry">
-    <img src="{{ url_for('static', filename='eknal_link.png') }}"
-         alt="Eknal Link Logo"
-         class="h-8 sm:h-12">
-  </a>
-
-  <!-- Navigation -->
-  <a href="/collaborators"
-     class="text-indigo-700 font-semibold
-            border-b-2 border-transparent
-            hover:border-indigo-500 hover:text-indigo-500 transition">
-     Collaborators
-  </a>
-
-</div>
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-  {% for category, message in messages %}
-  <div id="toast"
-       class="fixed top-6 left-1/2 -translate-x-1/2 z-50
-              px-7 py-3 rounded-xl shadow-xl
-              bg-white/90 backdrop-blur-md
-              text-gray-800 text-sm font-medium
-              border border-gray-200
-              flex items-center gap-3
-              transform scale-95 translate-y-4 opacity-0
-              transition-all duration-500">
-
-      <!-- Accent bar -->
-      <span class="w-1.5 h-6 rounded-full
-            {% if category=='success' %}bg-green-500
-            {% elif category=='danger' %}bg-red-500
-            {% else %}bg-indigo-500{% endif %}">
-      </span>
-
-      <span>{{ message }}</span>
-
-  </div>
-  {% endfor %}
-{% endif %}
-{% endwith %}
-<!-- Main -->
-<div class="flex-grow flex flex-col items-center px-4 pt-24 pb-12 relative z-10 w-full max-w-3xl mx-auto">
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 text-gray-900">
 
 <!-- Header -->
-<header class="text-center mb-6 px-2">
-  <h1 class="text-3xl sm:text-4xl font-bold text-indigo-700 mb-2">
-    Eknal Technologies
-  </h1>
-  <p class="text-gray-600 text-sm sm:text-base">
-    Explore your curated Python & project resources
-  </p>
+<header class="bg-white/70 backdrop-blur border-b border-white/80 sticky top-0 z-30 shadow-sm">
+  <div class="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
+    <a href="/">
+      <img src="{{ url_for('static', filename='eknal_link.png') }}"
+           alt="Eknal Link"
+           class="h-8 sm:h-10">
+    </a>
+    <nav class="flex items-center gap-6 text-sm font-semibold">
+      <a href="{{ url_for('resources') }}"
+         class="text-indigo-600 border-b-2 border-indigo-500 pb-0.5">Resources</a>
+      <a href="{{ url_for('collaborators') }}"
+         class="text-gray-500 hover:text-indigo-600 transition">Team</a>
+    </nav>
+  </div>
 </header>
 
-<!-- Content -->
-<main class="w-full flex flex-col space-y-4 px-2">
-
-<!-- Links -->
-{% for link in links %}
-<a href="{{ link.url }}" target="_blank"
-   class="block font-semibold text-center py-4 rounded-xl transition
-          transform hover:-translate-y-1 shadow-md
-          text-white bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500
-          hover:from-yellow-500 hover:via-orange-500 hover:to-amber-500 capitalize">
-  {{ link.title }}
-</a>
-{% endfor %}
-
-{% if not links %}
-<div class="text-center text-gray-500">
-  No resources available yet.
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div id="flash-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2">
+  {% for category, message in messages %}
+  <div class="flash-msg flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-sm font-medium
+              text-white opacity-0 translate-y-2 transition-all duration-500
+              {% if category == 'success' %}bg-green-500{% elif category == 'danger' %}bg-red-500
+              {% elif category == 'info' %}bg-blue-500{% else %}bg-indigo-500{% endif %}">
+    <span>{% if category == 'success' %}✓{% elif category == 'danger' %}✗{% else %}ℹ{% endif %}</span>
+    {{ message }}
+  </div>
+  {% endfor %}
 </div>
 {% endif %}
+{% endwith %}
 
-<!-- Files -->
-{% for file in files %}
-<a href="{{ url_for('preview_file', id=file.id) }}"
-   target="_blank"
-   class="block transition transform hover:-translate-y-1 shadow-md
-          bg-gradient-to-r from-yellow-500 to-orange-500
-          text-white font-semibold p-4 rounded-2xl
-          hover:from-orange-500 hover:to-yellow-500">
+<!-- Hero -->
+<section class="pt-14 pb-8 text-center px-4">
+  <h1 class="text-4xl sm:text-5xl font-extrabold text-indigo-700 mb-3 tracking-tight">
+    Eknal Technologies
+  </h1>
+  <p class="text-gray-500 text-base sm:text-lg max-w-xl mx-auto">
+    Explore your curated Python &amp; project resources
+  </p>
+</section>
 
-  <div class="flex flex-col items-center text-center gap-1">
-    <span class="capitalize text-lg">
-      {{ file.title }}
-    </span>
-    <span class="text-xs opacity-90">
-      Preview • Download available
-    </span>
+<!-- Search Bar -->
+<div class="max-w-xl mx-auto px-4 mb-8">
+  <div class="relative">
+    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg select-none">🔍</span>
+    <input
+      id="resourceSearch"
+      type="search"
+      placeholder="Search resources..."
+      class="w-full pl-11 pr-4 py-3 border border-slate-200 rounded-xl shadow-sm text-sm
+             bg-white focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
+      oninput="filterResources(this.value)">
   </div>
-
-</a>
-{% endfor %}
-</main>
 </div>
 
+<!-- Resources Grid -->
+<main class="max-w-5xl mx-auto px-4 pb-16 space-y-10">
+
+  <!-- Links Section -->
+  {% if links %}
+  <section id="links-section">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-4">Links</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="links-grid">
+      {% for link in links %}
+      <a href="{{ url_for('open_link', id=link.id) }}"
+         data-title="{{ link.title }}"
+         class="resource-item flex items-center gap-3 px-5 py-4 rounded-2xl font-semibold
+                text-white shadow-md bg-gradient-to-r from-indigo-500 via-blue-500 to-sky-400
+                hover:shadow-lg hover:from-sky-400 hover:via-blue-500 hover:to-indigo-500 capitalize">
+        <span class="text-xl">🔗</span>
+        <span>{{ link.title }}</span>
+      </a>
+      {% endfor %}
+    </div>
+    <p id="no-links-msg" class="hidden text-center text-slate-400 text-sm mt-4">No links match your search.</p>
+  </section>
+  {% endif %}
+
+  <!-- Files Section -->
+  {% if files %}
+  <section id="files-section">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-orange-400 mb-4">Files</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="files-grid">
+      {% for file in files %}
+      <div data-title="{{ file.title }}"
+           class="resource-item flex items-center justify-between
+                  bg-gradient-to-r from-orange-500 to-amber-400
+                  text-white font-semibold px-5 py-4 rounded-2xl shadow-md
+                  hover:shadow-lg hover:from-amber-400 hover:to-orange-500 capitalize">
+        <span class="flex items-center gap-3">
+          <span class="text-xl">📄</span>
+          <span>{{ file.title }}</span>
+        </span>
+        <span class="flex gap-2 shrink-0">
+          <a href="{{ url_for('preview_file', id=file.id) }}"
+             target="_blank" rel="noopener noreferrer"
+             class="text-xs bg-white/20 hover:bg-white/40 px-3 py-1 rounded-lg transition font-semibold">
+            Preview
+          </a>
+          <a href="{{ url_for('download', id=file.id) }}"
+             class="text-xs bg-white/20 hover:bg-white/40 px-3 py-1 rounded-lg transition font-semibold">
+            Download
+          </a>
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+    <p id="no-files-msg" class="hidden text-center text-slate-400 text-sm mt-4">No files match your search.</p>
+  </section>
+  {% endif %}
+
+  <!-- Empty state -->
+  {% if not links and not files %}
+  <div class="text-center py-20 text-slate-400">
+    <p class="text-5xl mb-4">📭</p>
+    <p class="text-lg font-medium">No resources added yet.</p>
+    <p class="text-sm mt-1">Check back soon!</p>
+  </div>
+  {% endif %}
+
+</main>
+
 <!-- Footer -->
-<footer class="text-center text-gray-500 text-xs sm:text-sm z-10 py-4 mt-auto border-t border-gray-300 w-full px-4">
-<p>
-  Developed by
-  <a href="https://www.linkedin.com/in/shalem-raj-putta-054388295/"
-     target="_blank"
-     class="text-indigo-600 font-semibold hover:underline">
-    Shalem Raj (Python Intern)
-  </a>
-  at
-  <a href="https://eknaltechnologies.in"
-     target="_blank"
-     class="text-indigo-600 font-semibold hover:underline">
-    Eknal Technologies
-  </a>.
-</p>
+<footer class="text-center text-gray-400 text-xs sm:text-sm py-6 border-t border-gray-200 bg-white/40 backdrop-blur">
+  <p>
+    Developed by
+    <a href="https://www.linkedin.com/in/sivaram-marpu/" target="_blank" rel="noopener noreferrer"
+       class="text-indigo-500 font-semibold hover:underline">Sivaram Marpu (React Intern)</a>
+    at
+    <a href="https://eknaltechnologies.in" target="_blank" rel="noopener noreferrer"
+       class="text-indigo-500 font-semibold hover:underline">Eknal Technologies</a>.
+  </p>
 </footer>
+
 <script>
-const toast = document.getElementById("toast");
-
-if (toast) {
+// ── Toast animation ──────────────────────────────────────────────────────────
+document.querySelectorAll('.flash-msg').forEach((el, i) => {
   setTimeout(() => {
-    toast.classList.remove("opacity-0", "scale-95", "translate-y-4");
-  }, 100);
-
-  setTimeout(() => {
-    toast.classList.add("opacity-0");
-  }, 2500);
+    el.classList.remove('opacity-0', 'translate-y-2');
+  }, 100 + i * 80);
 
   setTimeout(() => {
-    toast.remove();
-  }, 3000);
+    el.classList.add('opacity-0');
+  }, 2800 + i * 80);
+
+  setTimeout(() => {
+    el.remove();
+  }, 3400 + i * 80);
+});
+
+// ── Instant search / filter ───────────────────────────────────────────────────
+function filterResources(query) {
+  const q = query.trim().toLowerCase();
+
+  filterGrid('links-grid', 'no-links-msg', q);
+  filterGrid('files-grid', 'no-files-msg', q);
+
+  // Toggle section visibility
+  ['links-section', 'files-section'].forEach(id => {
+    const sec = document.getElementById(id);
+    if (!sec) return;
+    const grid = sec.querySelector('[id$="-grid"]');
+    const items = grid ? grid.querySelectorAll('[data-title]') : [];
+    const anyVisible = Array.from(items).some(el => !el.classList.contains('hidden'));
+    sec.style.display = anyVisible ? '' : 'none';
+  });
+}
+
+function filterGrid(gridId, noMsgId, q) {
+  const grid  = document.getElementById(gridId);
+  const noMsg = document.getElementById(noMsgId);
+  if (!grid)  return;
+
+  let visible = 0;
+  grid.querySelectorAll('[data-title]').forEach(el => {
+    const title = el.dataset.title.toLowerCase();
+    const match = !q || title.includes(q);
+    el.classList.toggle('hidden', !match);
+    if (match) visible++;
+  });
+
+  if (noMsg) {
+    noMsg.classList.toggle('hidden', visible > 0 || !q);
+  }
 }
 </script>
 </body>

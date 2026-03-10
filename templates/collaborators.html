@@ -1,193 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Eknal Link | Collaborators</title>
-
-  <!-- Tailwind CSS -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team | Eknal Technologies</title>
+  <meta name="description" content="Meet the team behind the Eknal Technologies project.">
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <style>body{font-family:'Inter',sans-serif;} .card{transition:all 0.2s ease;}</style>
 </head>
+<body class="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 text-gray-900">
 
-<body class="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 via-white to-indigo-100 text-gray-900 relative overflow-x-hidden">
+<!-- Header -->
+<header class="bg-white/70 backdrop-blur border-b border-white/80 sticky top-0 z-30 shadow-sm">
+  <div class="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
+    <a href="{{ url_for('resources') }}">
+      <img src="{{ url_for('static', filename='eknal_link.png') }}"
+           alt="Eknal Link" class="h-8 sm:h-10">
+    </a>
+    <nav class="flex items-center gap-6 text-sm font-semibold">
+      <a href="{{ url_for('resources') }}"    class="text-gray-500 hover:text-indigo-600 transition">Resources</a>
+      <a href="{{ url_for('collaborators') }}" class="text-indigo-600 border-b-2 border-indigo-500 pb-0.5">Team</a>
+    </nav>
+  </div>
+</header>
 
-<!-- ================= TOAST ================= -->
+<!-- Flash -->
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
+<div class="fixed top-20 right-4 z-50 flex flex-col gap-2">
   {% for category, message in messages %}
-  <div id="toast"
-       class="fixed top-6 left-1/2 -translate-x-1/2 z-50
-              px-7 py-3 rounded-xl shadow-xl
-              bg-white/90 backdrop-blur-md
-              text-gray-800 text-sm font-medium
-              border border-gray-200
-              flex items-center gap-3
-              transform scale-95 translate-y-4 opacity-0
-              transition-all duration-500">
-
-      <!-- Accent bar -->
-      <span class="w-1.5 h-6 rounded-full
-            {% if category=='success' %}bg-green-500
-            {% elif category=='danger' %}bg-red-500
-            {% else %}bg-indigo-500{% endif %}">
-      </span>
-
-      <span>{{ message }}</span>
-
+  <div class="flash-msg flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-sm font-medium
+              text-white opacity-0 translate-y-2 transition-all duration-500
+              {% if category == 'success' %}bg-green-500{% elif category == 'danger' %}bg-red-500{% else %}bg-indigo-500{% endif %}">
+    {{ message }}
   </div>
   {% endfor %}
+</div>
 {% endif %}
 {% endwith %}
 
-<!-- Background Pattern -->
-<div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 pointer-events-none"></div>
-
-<!-- Logo -->
-<div class="absolute top-4 left-4 z-20">
-  <a href="/admin-entry">
-  <img src="{{ url_for('static', filename='eknal_link.png') }}"
-       class="h-8 sm:h-12">
-</a>
-</div>
-
-<!-- Top Right Navigation -->
-{% if session.get("is_admin") %}
-  <div class="absolute top-6 right-12 z-20 text-sm sm:text-base font-semibold">
-    <a href="/add-collaborator"
-       class="text-indigo-700 hover:text-indigo-500
-              border-b-2 border-transparent
-              hover:border-indigo-500 transition">
-       New Collaborator
-    </a>
-  </div>
-  
- {% else %}
- <div class="absolute top-6 right-12 z-20 text-sm sm:text-base font-semibold">
-    <a href="/request-edit"
-       class="text-indigo-700 hover:text-indigo-500
-              border-b-2 border-transparent
-              hover:border-indigo-500 transition">
-       Update Your Information
-    </a>
-  </div>
- 
-{% endif %}
-
-<!-- ================= MAIN ================= -->
-<div class="flex-grow flex flex-col items-center px-4 pt-24 pb-12 relative z-10 w-full max-w-5xl mx-auto">
-
-<!-- Header -->
-<header class="text-center mb-10">
-  <h1 class="text-3xl sm:text-4xl font-bold text-indigo-700">
+<!-- Hero -->
+<section class="pt-14 pb-8 text-center px-4">
+  <h1 class="text-4xl sm:text-5xl font-extrabold text-indigo-700 mb-3 tracking-tight">
     Project Collaborators
   </h1>
-  <p class="text-gray-600 mt-2">
+  <p class="text-gray-500 text-base sm:text-lg max-w-xl mx-auto">
     Developers who contributed to this platform
   </p>
-</header>
+</section>
 
 <!-- Cards -->
-<div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-6">
+<main class="max-w-4xl mx-auto px-4 pb-16">
+  {% if people %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    {% for person in people %}
+    <div class="card bg-white rounded-2xl shadow-md p-6 flex flex-col gap-3
+                border border-transparent hover:border-indigo-200 hover:shadow-lg hover:-translate-y-0.5">
 
-{% for c in people %}
+      <!-- Avatar initials -->
+      <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-400
+                  flex items-center justify-center text-white font-bold text-lg shrink-0">
+        {{ person.name[0].upper() }}
+      </div>
 
-<div class="bg-white/80 backdrop-blur rounded-2xl shadow-lg p-6
-            transition transform hover:-translate-y-1 hover:shadow-xl">
+      <div class="flex-1 min-w-0">
+        <p class="font-semibold text-gray-800 truncate">{{ person.name }}</p>
+        <p class="text-indigo-400 text-xs truncate">{{ person.email }}</p>
+        <p class="text-gray-500 text-sm mt-1">{{ person.contribution }}</p>
+      </div>
 
-  <!-- Name -->
-  <h3 class="text-lg font-semibold text-indigo-700 mb-1">
-    {{ c.name|title }}
-  </h3>
-
-  <!-- Email -->
-  <a href="mailto:{{ c.email }}"
-   class="text-sm text-indigo-600 font-medium block mb-2 no-underline hover:text-indigo-800">
-   {{ c.email }}
-</a>
-
-  <!-- Contribution -->
-  <p class="text-sm text-gray-600 mb-4">
-    {{ c.contribution }}
-  </p>
-
-  <div class="flex items-center gap-4">
-
-    <!-- Resume -->
-    <a href="{{ c.resume_url }}"
-       target="_blank"
-       class="bg-gradient-to-r from-orange-500 to-yellow-500
-              text-white px-5 py-2 rounded-lg text-sm font-semibold
-              hover:from-yellow-500 hover:to-orange-500 transition">
-      View Resume →
-    </a>
-
-    <!-- Edit -->
-  {% if session.get("is_admin") %}
-    <a href="/edit-collaborator/{{ c.id }}"
-       class="text-sm text-indigo-600 hover:underline">
-       Edit
-    </a>
-   {% endif %} 
-
+      <div class="flex items-center gap-3 mt-1">
+        <a href="{{ person.resume_url }}" target="_blank" rel="noopener noreferrer"
+           class="flex-1 text-center py-2 rounded-lg text-sm font-semibold text-white
+                  bg-gradient-to-r from-orange-500 to-amber-400
+                  hover:from-amber-400 hover:to-orange-500 transition shadow-sm">
+          View Resume →
+        </a>
+        <a href="{{ url_for('request_edit') }}"
+           class="text-xs text-gray-400 hover:text-indigo-500 transition font-medium border border-gray-200
+                  px-3 py-2 rounded-lg hover:border-indigo-300">
+          Edit
+        </a>
+      </div>
+    </div>
+    {% endfor %}
   </div>
 
-</div>
+  {% else %}
+  <div class="text-center py-20 text-slate-400">
+    <p class="text-5xl mb-4">👥</p>
+    <p class="text-lg font-medium">No collaborators yet.</p>
+    <p class="text-sm mt-1">Check back soon!</p>
+  </div>
+  {% endif %}
 
-{% endfor %}
+  <!-- Back link -->
+  <div class="text-center mt-10">
+    <a href="{{ url_for('resources') }}"
+       class="text-indigo-500 text-sm font-semibold hover:underline">
+      ← Back to Resources
+    </a>
+  </div>
+</main>
 
-{% if not people %}
-<div class="text-center text-gray-500 col-span-full">
-  No collaborators added yet.
-</div>
-{% endif %}
-
-</div>
-
-<!-- Back -->
-<div class="mt-12">
-  <a href="/" class="text-indigo-600 font-semibold hover:underline">
-    ← Back to Resources
-  </a>
-</div>
-
-</div>
-
-<!-- ================= FOOTER ================= -->
-<footer class="text-center text-gray-500 text-xs sm:text-sm z-10 py-4 mt-auto border-t border-gray-300 w-full px-4">
-<p>
-  Developed by
-  <a href="https://www.linkedin.com/in/shalem-raj-putta-054388295/"
-     target="_blank"
-     class="text-indigo-600 font-semibold hover:underline">
-    Shalem Raj (Python Intern)
-  </a>
-  at
-  <a href="https://eknaltechnologies.in"
-     target="_blank"
-     class="text-indigo-600 font-semibold hover:underline">
-    Eknal Technologies
-  </a>.
-</p>
+<!-- Footer -->
+<footer class="text-center text-gray-400 text-xs sm:text-sm py-6 border-t border-gray-200 bg-white/40 backdrop-blur mt-auto">
+  <p>
+    Developed by
+    <a href="https://www.linkedin.com/in/sivaram-marpu/" target="_blank" rel="noopener noreferrer"
+       class="text-indigo-500 font-semibold hover:underline">Sivaram Marpu (React Intern)</a>
+    at
+    <a href="https://eknaltechnologies.in" target="_blank" rel="noopener noreferrer"
+       class="text-indigo-500 font-semibold hover:underline">Eknal Technologies</a>.
+  </p>
 </footer>
 
-<!-- ================= TOAST SCRIPT ================= -->
 <script>
-const toast = document.getElementById("toast");
-
-if (toast) {
-  setTimeout(() => {
-    toast.classList.remove("translate-x-10", "opacity-0");
-  }, 100);
-
-  setTimeout(() => {
-    toast.classList.add("opacity-0");
-  }, 2500);
-
-  setTimeout(() => {
-    toast.remove();
-  }, 2000);
-}
+document.querySelectorAll('.flash-msg').forEach((el, i) => {
+  setTimeout(() => el.classList.remove('opacity-0','translate-y-2'), 100 + i*80);
+  setTimeout(() => el.classList.add('opacity-0'), 2800 + i*80);
+  setTimeout(() => el.remove(), 3400 + i*80);
+});
 </script>
-
 </body>
 </html>
